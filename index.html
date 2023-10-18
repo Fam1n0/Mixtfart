@@ -14,9 +14,15 @@
 <script>
   let img;
   let imgLoaded = false;
+  let pieceWidth = 50;
+  let pieceHeight = 50;
+  let cols, rows;
 
   function setup() {
     createCanvas(windowWidth, windowHeight);
+    frameRate(10);  // Set frame rate to 10 frames per second
+    cols = width / pieceWidth;
+    rows = height / pieceHeight;
     document.getElementById('fileInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (file) {
@@ -32,16 +38,17 @@
   }
 
   function draw() {
-    clear();
     if (imgLoaded) {
-      const pieceWidth = 50;
-      const pieceHeight = 50;
-      const x = floor(random(img.width - pieceWidth));
-      const y = floor(random(img.height - pieceHeight));
-      const imgPiece = img.get(x, y, pieceWidth, pieceHeight);
-      const destX = random(width - pieceWidth);
-      const destY = random(height - pieceHeight);
-      image(imgPiece, destX, destY);
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const x = floor(random(img.width - pieceWidth));
+          const y = floor(random(img.height - pieceHeight));
+          const imgPiece = img.get(x, y, pieceWidth, pieceHeight);
+          const destX = col * pieceWidth;
+          const destY = row * pieceHeight;
+          image(imgPiece, destX, destY);
+        }
+      }
     }
   }
 </script>
