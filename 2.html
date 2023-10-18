@@ -7,7 +7,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 <style>
   body { margin: 0; }
-  #buttons { position: fixed; top: 10px; left: 10px; }
+  #fileInput { display: block; margin: 10px; }
+  #buttons { position: fixed; top: 50px; left: 10px; }
 </style>
 </head>
 <body>
@@ -20,8 +21,6 @@
   let img;
   let imgLoaded = false;
   let mixing = false;
-  let pieceCount = 0;
-  const maxPieces = (window.innerWidth * window.innerHeight) / (50 * 50);
 
   function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -40,7 +39,7 @@
   }
 
   function draw() {
-    if (mixing && imgLoaded && pieceCount < maxPieces) {
+    if (mixing && imgLoaded) {
       const pieceWidth = 50;
       const pieceHeight = 50;
       const x = floor(random(img.width - pieceWidth));
@@ -49,17 +48,12 @@
       const destX = random(width - pieceWidth);
       const destY = random(height - pieceHeight);
       image(imgPiece, destX, destY);
-      pieceCount++;
-      if (pieceCount >= maxPieces) {
-        mixing = false;
-      }
     }
   }
 
   function startMix() {
     if (imgLoaded) {
       mixing = true;
-      pieceCount = 0;
       clear();
     }
   }
