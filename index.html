@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mixed Art</title>
+<style>
+  body { margin: 0; }
+  canvas { display: block; background-color: #f0f0f0; }
+</style>
+</head>
+<body>
+<input type="file" id="fileInput" accept="image/*">
+<canvas id="canvas"></canvas>
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  let imgData = null;
+
+  document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        img.src = event.target.result;
+      }
+      reader.readAsDataURL(file);
+    }
+  });
+
+  function getRandomImagePiece() {
+    if (!imgData) return;
+    const pieceWidth = 50;
+    const pieceHeight = 50;
+    const x = Math.random() * (canvas.width - pieceWidth);
+    const y = Math.random() * (canvas.height - pieceHeight);
+    const pieceData = ctx.getImageData(x, y, pieceWidth, pieceHeight);
+    return { data: pieceData, x, y, width: pieceWidth, height: pieceHeight };
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const piece = getRandomImagePiece();
+    if (piece) {
+      ctx.putImageData(piece.data, Math.random() * canvas.width, Math.random() * canvas.height);
+    }
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+
+</script>
+</body>
+</html>
