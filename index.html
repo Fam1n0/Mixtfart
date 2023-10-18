@@ -4,58 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mixed Art</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 <style>
   body { margin: 0; }
-  canvas { display: block; background-color: #f0f0f0; }
 </style>
 </head>
 <body>
 <input type="file" id="fileInput" accept="image/*">
-<canvas id="canvas"></canvas>
 <script>
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  let img;
+  let imgLoaded = false;
 
-  let imgData = null;
-
-  document.getElementById('fileInput').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const img = new Image();
-        img.onload = function() {
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          draw();
+  function setup() {
+    createCanvas(windowWidth, windowHeight);
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          img = loadImage(event.target.result, () => {
+            imgLoaded = true;
+          });
         }
-        img.src = event.target.result;
+        reader.readAsDataURL(file);
       }
-      reader.readAsDataURL(file);
-    }
-  });
-
-  function getRandomImagePiece() {
-    if (!imgData) return;
-    const pieceWidth = 50;
-    const pieceHeight = 50;
-    const x = Math.floor(Math.random() * (canvas.width - pieceWidth));
-    const y = Math.floor(Math.random() * (canvas.height - pieceHeight));
-    const pieceData = ctx.getImageData(x, y, pieceWidth, pieceHeight);
-    return { data: pieceData, x, y, width: pieceWidth, height: pieceHeight };
+    });
   }
 
   function draw() {
-    const piece = getRandomImagePiece();
-    if (piece) {
-      ctx.putImageData(piece.data, Math.random() * canvas.width, Math.random() * canvas.height);
-      requestAnimationFrame(draw);
+    clear();
+    if (imgLoaded) {
+      const pieceWidth = 50;
+      const pieceHeight = 50;
+      const x = floor(random(img.width - pieceWidth));
+      const y = floor(random(img.height - pieceHeight));
+      const imgPiece = img.get(x, y, pieceWidth, pieceHeight);
+      const destX = random(width - pieceWidth);
+      const destY = random(height - pieceHeight);
+      image(imgPiece, destX, destY);
     }
   }
-
 </script>
 </body>
 </html>
