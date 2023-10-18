@@ -30,6 +30,7 @@
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           ctx.clearRect(0, 0, canvas.width, canvas.height);
+          draw();
         }
         img.src = event.target.result;
       }
@@ -41,22 +42,19 @@
     if (!imgData) return;
     const pieceWidth = 50;
     const pieceHeight = 50;
-    const x = Math.random() * (canvas.width - pieceWidth);
-    const y = Math.random() * (canvas.height - pieceHeight);
+    const x = Math.floor(Math.random() * (canvas.width - pieceWidth));
+    const y = Math.floor(Math.random() * (canvas.height - pieceHeight));
     const pieceData = ctx.getImageData(x, y, pieceWidth, pieceHeight);
     return { data: pieceData, x, y, width: pieceWidth, height: pieceHeight };
   }
 
   function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     const piece = getRandomImagePiece();
     if (piece) {
       ctx.putImageData(piece.data, Math.random() * canvas.width, Math.random() * canvas.height);
+      requestAnimationFrame(draw);
     }
-    requestAnimationFrame(draw);
   }
-
-  draw();
 
 </script>
 </body>
