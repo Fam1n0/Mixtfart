@@ -17,39 +17,29 @@
   <button onclick="startMix()">Mix</button>
   <button onclick="stopMix()">Stop</button>
 </div>
+<canvas id="mixedCanvas"></canvas>
 <script>
   let images = [];
   let mixing = false;
-  let commonWidth; // Width to which all images will be resized
-  let commonHeight; // Height to which all images will be resized
-  let progress = []; // Array to track drawing progress for each image
+  let mixedCanvas;
+  let progress = [];
 
   function setup() {
-    createCanvas(windowWidth, windowHeight);
-    noLoop(); // Stop the draw loop until images are loaded
+    mixedCanvas = createCanvas(windowWidth, windowHeight);
+    noLoop();
     document.getElementById('fileInput').addEventListener('change', function(e) {
       const files = e.target.files;
-      commonWidth = Infinity; // Start with a very large value
-      commonHeight = Infinity; // Start with a very large value
-
-      // First, determine the smallest dimensions
       let imageElements = [];
       Array.from(files).forEach((file, index) => {
         let img = createImg(URL.createObjectURL(file), () => {
-          commonWidth = min(commonWidth, img.width);
-          commonHeight = min(commonHeight, img.height);
-          img.hide(); // Hide the image element
+          img.hide();
           imageElements.push(img);
           if (imageElements.length === files.length) {
-            // Resize and load images
-            imageElements.forEach(imgEl => {
-              imgEl.size(commonWidth, commonHeight);
-              images.push(imgEl);
-              let rows = floor(commonHeight / 5);
-              let cols = floor(commonWidth / 5);
-              progress.push(new Array(rows).fill(0).map(() => new Array(cols).fill(false)));
-            });
-            loop(); // Start the draw loop when all images are loaded and resized
+            images = imageElements;
+            let rows = floor(height / 5);
+            let cols = floor(width / 5);
+            progress = new Array(images.length).fill(0).map(() => new Array(rows).fill(0).map(() => new Array(cols).fill(false)));
+            loop();
           }
         });
       });
@@ -57,10 +47,9 @@
   }
 
   function draw() {
-    background(255);
     if (mixing && images.length > 0) {
-      let pieceWidth = 5;
-      let pieceHeight = 5;
+      let pieceWidth = width / 5;
+      let pieceHeight = height / 5;
 
       // Pick a random image that is not yet completed
       let incompleteImages = images.filter((_, index) => progress[index].some(row => row.includes(false)));
@@ -71,8 +60,8 @@
         // Find the next square that has not been drawn yet
         let drawn = false;
         while (!drawn) {
-          let row = floor(random(img.height / pieceHeight));
-          let col = floor(random(img.width / pieceWidth));
+          let row = floor(random(height / pieceHeight));
+          let col = floor(random(width / pieceWidth));
 
           if (!progress[imgIndex][row][col]) {
             let x = col * pieceWidth;
@@ -80,7 +69,7 @@
             img.loadPixels();
             let imgPiece = img.get(x, y, pieceWidth, pieceHeight);
             image(imgPiece, x, y);
-            progress[imgIndex][row][col] = true; // Mark this square as drawn
+            progress[imgIndex][row][col] = true;
             drawn = true;
           }
         }
@@ -100,4 +89,3 @@
 </script>
 </body>
 </html>
-
