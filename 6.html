@@ -6,9 +6,9 @@
 <title>Mixed Art</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 <style>
-  body { margin: 0; }
+  body { margin: 0; padding-top: 60px; /* Make room for the buttons at the top */ }
   #fileInput { display: block; margin: 10px; }
-  #buttons { position: fixed; top: 50px; left: 10px; }
+  #buttons { position: absolute; top: 0; left: 0; /* Position at the top */ }
 </style>
 </head>
 <body>
@@ -16,75 +16,58 @@
 <div id="buttons">
   <button onclick="startMix()">Mix</button>
   <button onclick="stopMix()">Stop</button>
+  <button onclick="saveImage()">Save</button> <!-- New Save button -->
 </div>
-<canvas id="mixedCanvas"></canvas>
 <script>
   let images = [];
   let mixing = false;
-  let mixedCanvas;
-  let progress = [];
 
   function setup() {
-    mixedCanvas = createCanvas(windowWidth, windowHeight);
-    noLoop();
+    createCanvas(windowWidth, windowHeight - 60); // Adjust height to make room for buttons
     document.getElementById('fileInput').addEventListener('change', function(e) {
       const files = e.target.files;
-      let imageElements = [];
-      Array.from(files).forEach((file, index) => {
-        let img = createImg(URL.createObjectURL(file), () => {
-          img.hide();
-          imageElements.push(img);
-          if (imageElements.length === files.length) {
-            images = imageElements;
-            let rows = floor(height / 5);
-            let cols = floor(width / 5);
-            progress = new Array(images.length).fill(0).map(() => new Array(rows).fill(0).map(() => new Array(cols).fill(false)));
-            loop();
-          }
-        });
-      });
+      for (let i = 0; i < files.length; i++) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const img = loadImage(event.target.result, () => {
+            images.push(img);
+          });
+        }
+        reader.readAsDataURL(files[i]);
+      }
     });
   }
 
   function draw() {
     if (mixing && images.length > 0) {
-      let pieceWidth = width / 5;
-      let pieceHeight = height / 5;
-
-      // Pick a random image that is not yet completed
-      let incompleteImages = images.filter((_, index) => progress[index].some(row => row.includes(false)));
-      if (incompleteImages.length > 0) {
-        let imgIndex = images.indexOf(random(incompleteImages));
-        let img = images[imgIndex];
-
-        // Find the next square that has not been drawn yet
-        let drawn = false;
-        while (!drawn) {
-          let row = floor(random(height / pieceHeight));
-          let col = floor(random(width / pieceWidth));
-
-          if (!progress[imgIndex][row][col]) {
-            let x = col * pieceWidth;
-            let y = row * pieceHeight;
-            img.loadPixels();
-            let imgPiece = img.get(x, y, pieceWidth, pieceHeight);
-            image(imgPiece, x, y);
-            progress[imgIndex][row][col] = true;
-            drawn = true;
-          }
-        }
-      }
+      const pieceWidth = 5;
+      const pieceHeight = 5;
+      const img = random(images);
+      const x = floor(random(img.width - pieceWidth));
+      const y = floor(random(img.height - pieceHeight));
+      const imgPiece = img.get(x, y, pieceWidth, pieceHeight);
+      const destX = random(width - pieceWidth);
+      const destY = random(height - pieceHeight);
+      image(imgPiece, destX, destY);
     }
   }
 
   function startMix() {
     if (images.length > 0) {
       mixing = true;
+      loop(); // Start the draw loop
     }
   }
 
   function stopMix() {
     mixing = false;
+    noLoop(); // Stop the draw loop
+  }
+
+  function saveImage() {
+    // Generate a filename using the current date and time
+    const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
+    saveCanvas('MixedArt_' + timestamp, 'png');
   }
 </script>
 </body>
