@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mixed Art</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+<style>
+  body { margin: 0; }
+  #fileInput { display: block; margin: 10px; }
+  #buttons { position: fixed; top: 50px; left: 10px; }
+</style>
+</head>
+<body>
+<input type="file" id="fileInput" accept="image/*" multiple>
+<div id="buttons">
+  <button onclick="startMix()">Mix</button>
+  <button onclick="stopMix()">Stop</button>
+</div>
+<script>
+  let images = [];
+  let mixing = false;
+
+  function setup() {
+    createCanvas(windowWidth, windowHeight);
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      const files = e.target.files;
+      for (let i = 0; i < files.length; i++) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const img = loadImage(event.target.result, () => {
+            images.push(img);
+          });
+        }
+        reader.readAsDataURL(files[i]);
+      }
+    });
+  }
+
+  function draw() {
+    if (mixing && images.length > 0) {
+      const pieceWidth = 5;
+      const pieceHeight = 5;
+      const img = random(images);
+      const x = floor(random(img.width - pieceWidth));
+      const y = floor(random(img.height - pieceHeight));
+      const imgPiece = img.get(x, y, pieceWidth, pieceHeight);
+      const destX = random(width - pieceWidth);
+      const destY = random(height - pieceHeight);
+      image(imgPiece, destX, destY);
+    }
+  }
+
+  function startMix() {
+    if (images.length > 0) {
+      mixing = true;
+    }
+  }
+
+  function stopMix() {
+    mixing = false;
+  }
+</script>
+</body>
+</html>
