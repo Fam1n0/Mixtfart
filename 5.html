@@ -6,9 +6,9 @@
 <title>Mixed Art</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 <style>
-  body { margin: 0; }
+  body { margin: 0; padding-top: 60px; }
   #fileInput { display: block; margin: 10px; }
-  #buttons { position: fixed; top: 50px; left: 10px; }
+  #buttons { position: absolute; top: 0; left: 0; }
 </style>
 </head>
 <body>
@@ -16,90 +16,47 @@
 <div id="buttons">
   <button onclick="startMix()">Mix</button>
   <button onclick="stopMix()">Stop</button>
+  <button onclick="saveImage()">Save</button>
 </div>
 <script>
   let images = [];
   let mixing = false;
-  let commonWidth; // Width to which all images will be resized
-  let commonHeight; // Height to which all images will be resized
-  let progress = []; // Array to track drawing progress for each image
-
-  function preload() {
-    // Optionally, you can preload some images if you have their URLs
-  }
 
   function setup() {
-    createCanvas(windowWidth, windowHeight);
-    noLoop(); // Stop the draw loop until images are loaded
-
+    createCanvas(windowWidth, windowHeight - 60);
+    frameRate(30); // Set frame rate to 30 fps or higher for a faster effect
     document.getElementById('fileInput').addEventListener('change', function(e) {
-      const files = e.target.files;
-      commonWidth = Infinity; // Start with a very large value
-      commonHeight = Infinity; // Start with a very large value
-
-      // First, determine the smallest dimensions
-      let imageElements = [];
-      Array.from(files).forEach((file, index) => {
-        let img = createImg(URL.createObjectURL(file), () => {
-          commonWidth = min(commonWidth, img.width);
-          commonHeight = min(commonHeight, img.height);
-          img.hide(); // Hide the image element
-          imageElements.push(img);
-          if (imageElements.length === files.length) {
-            // Resize and load images
-            imageElements.forEach(imgEl => {
-              imgEl.size(commonWidth, commonHeight);
-              images.push(imgEl);
-              let rows = commonHeight / 5;
-              let cols = commonWidth / 5;
-              progress.push(new Array(rows).fill(0).map(() => new Array(cols).fill(false)));
-            });
-            loop(); // Start the draw loop when all images are loaded and resized
-          }
-        });
-      });
+      // ... file input event listener code
     });
   }
 
   function draw() {
     if (mixing && images.length > 0) {
-      let pieceWidth = 5;
-      let pieceHeight = 5;
-
-      // Pick a random image that is not yet completed
-      let incompleteImages = images.filter((_, index) => progress[index].some(row => row.includes(false)));
-      if (incompleteImages.length > 0) {
-        let imgIndex = images.indexOf(random(incompleteImages));
-        let img = images[imgIndex];
-        
-        // Find the next square that has not been drawn yet
-        let drawn = false;
-        while (!drawn) {
-          let row = floor(random(img.height / pieceHeight));
-          let col = floor(random(img.width / pieceWidth));
-          
-          if (!progress[imgIndex][row][col]) {
-            let x = col * pieceWidth;
-            let y = row * pieceHeight;
-            img.loadPixels();
-            let imgPiece = img.get(x, y, pieceWidth, pieceHeight);
-            image(imgPiece, x, y);
-            progress[imgIndex][row][col] = true; // Mark this square as drawn
-            drawn = true;
-          }
-        }
+      background(0); // Set the background to black to mimic a TV screen
+      for (let i = 0; i < width * height / 1000; i++) { // Increase the number for more density
+        const pieceWidth = 1; // Smaller piece size for finer grain
+        const pieceHeight = 1;
+        const img = random(images);
+        const x = floor(random(img.width - pieceWidth));
+        const y = floor(random(img.height - pieceHeight));
+        const imgPiece = img.get(x, y, pieceWidth, pieceHeight);
+        const destX = floor(random(width));
+        const destY = floor(random(height));
+        image(imgPiece, destX, destY);
       }
     }
   }
 
   function startMix() {
-    if (images.length > 0) {
-      mixing = true;
-    }
+    // ... startMix function code
   }
 
   function stopMix() {
-    mixing = false;
+    // ... stopMix function code
+  }
+
+  function saveImage() {
+    // ... saveImage function code
   }
 </script>
 </body>
